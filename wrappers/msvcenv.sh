@@ -6,6 +6,7 @@ BASE=z:\\opt\\msvc
 BASE_UNIX=/opt/msvc
 MSVCVER=14.13.26128
 SDKVER=10.0.16299.0
+LLVM=/opt/msvc/llvm
 ARCH=x86
 MSVCDIR="$BASE\\vc\\tools\\msvc\\$MSVCVER"
 SDKINCLUDE="$BASE\\$SDK\\include\\$SDKVER"
