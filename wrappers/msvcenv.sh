@@ -11,13 +11,13 @@ fi
 BASE=z:${BASE_UNIX//\//\\}
 MSVCVER=14.13.26128
 SDKVER=10.0.16299.0
-LLVM=/opt/msvc/llvm
 ARCH=x86
 MSVCDIR="$BASE\\vc\\tools\\msvc\\$MSVCVER"
 SDKINCLUDE="$BASE\\$SDK\\include\\$SDKVER"
 SDKLIB="$BASE\\$SDK\\lib\\$SDKVER"
 BINDIR=$BASE_UNIX/vc/tools/msvc/$MSVCVER/bin/Hostx64/$ARCH
 SDKBINDIR=$BASE_UNIX/$SDK_UNIX/bin/$SDKVER/x64
+LLVMDIR=/opt/llvm
 export INCLUDE="$MSVCDIR\\include;$SDKINCLUDE\\shared;$SDKINCLUDE\\ucrt;$SDKINCLUDE\\um;$SDKINCLUDE\\winrt"
 export LIB="$MSVCDIR\\lib\\$ARCH;$SDKLIB\\ucrt\\$ARCH;$SDKLIB\\um\\$ARCH"
 export LIBPATH="$LIB"

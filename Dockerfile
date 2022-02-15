@@ -2,18 +2,18 @@ FROM ubuntu:20.04
 
 RUN apt-get update && \
     apt-get install -y wine64-development python msitools python-simplejson \
-                       python-six ca-certificates curl p7zip && \
+        python-six ca-certificates curl p7zip && \
     apt-get clean -y && \
     rm -rf /var/lib/apt/lists/*
 
-WORKDIR /opt/msvc
+WORKDIR /opt
+RUN curl -L --output ./obfuscator-llvm-v12.0.0.7z \
+    https://github.com/hudjefa/obfuscator-llvm/releases/download/v12.0.0/obfuscator-llvm-v12.0.0.7z && \
+    7zr x -bb0 obfuscator-llvm-v12.0.0.7z && rm -f obfuscator-llvm-v12.0.0.7z
 
+WORKDIR /opt/msvc
 COPY lowercase fixinclude install.sh vsdownload.py ./
 COPY wrappers/* ./wrappers/
-RUN curl -L --output ./llvm-clang-v1.0.0.7z \
-    https://github.com/klezVirus/obfuscator/releases/download/v1.0.0/llvm-clang-v1.0.0.7z && \
-    7zr x -bb0 llvm-clang-v1.0.0.7z && \
-    mv llvm-clang llvm && rm -f llvm-clang-v1.0.0.7z
 
 RUN PYTHONUNBUFFERED=1 ./vsdownload.py --accept-license --dest /opt/msvc && \
     ./install.sh /opt/msvc && \
