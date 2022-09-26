@@ -1,4 +1,18 @@
 #!/bin/sh
+#
+# Copyright (c) 2019 Martin Storsjo
+#
+# Permission to use, copy, modify, and/or distribute this software for any
+# purpose with or without fee is hereby granted, provided that the above
+# copyright notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+# ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+# ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+# OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 set -e
 
@@ -34,6 +48,9 @@ mv vc/tools/MSVC vc/tools/msvc
 # linking MSVC built objects with lld-link.
 cd $(echo vc/tools/msvc/* | awk '{print $1}')/lib
 for arch in x86 x64 arm arm64; do
+    if [ ! -d "$arch" ]; then
+        continue
+    fi
     cd $arch
     for i in libcmt libcmtd msvcrt msvcrtd oldnames; do
         ln -s $i.lib $(echo $i | tr [a-z] [A-Z]).lib
@@ -61,11 +78,27 @@ mv Lib lib
 mv Include include
 cd ../..
 SDKVER=$(basename $(echo kits/10/include/* | awk '{print $NF}'))
+
+# Lowercase the SDK headers and libraries. As long as cl.exe is executed
+# within wine, this is mostly not necessary.
+#
+# (Older versions of cl.exe needed it, because those versions would produce
+# dependency paths with incorrect casing for some headers, breaking rebuilds
+# with tools that check dependencies.)
+#
+# But lowercasing the headers allows using them with case sensitive native
+# tools (such as clang-cl and lld-link). Leaving their original casing isn't
+# an option, because the headers aren't self consistent (headers are
+# included with a different mix of upper/lower case than what they have
+# on disk).
 $ORIG/lowercase kits/10/include/$SDKVER/um
 $ORIG/lowercase kits/10/include/$SDKVER/shared
 $ORIG/fixinclude kits/10/include/$SDKVER/um
 $ORIG/fixinclude kits/10/include/$SDKVER/shared
 for arch in x86 x64 arm arm64; do
+    if [ ! -d "kits/10/lib/$SDKVER/um/$arch" ]; then
+        continue
+    fi
     $ORIG/lowercase kits/10/lib/$SDKVER/um/$arch
 done
 
@@ -73,6 +106,9 @@ SDKVER=$(basename $(echo kits/10/include/* | awk '{print $NF}'))
 MSVCVER=$(basename $(echo vc/tools/msvc/* | awk '{print $1}'))
 cat $ORIG/wrappers/msvcenv.sh | sed 's/MSVCVER=.*/MSVCVER='$MSVCVER/ | sed 's/SDKVER=.*/SDKVER='$SDKVER/ > msvcenv.sh
 for arch in x86 x64 arm arm64; do
+    if [ ! -d "vc/tools/msvc/$MSVCVER/bin/Hostx64/$arch" ]; then
+        continue
+    fi
     mkdir -p bin/$arch
     cp $ORIG/wrappers/* bin/$arch
     cat msvcenv.sh | sed 's/ARCH=.*/ARCH='$arch/ > bin/$arch/msvcenv.sh
